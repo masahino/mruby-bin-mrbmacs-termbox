@@ -1,7 +1,6 @@
 module Mrbmacs
   class EditWindowTermbox < EditWindow
     def initialize(frame, buffer, left, top, width, height)
-      $stderr.puts "EditWindowTermbox"
       @frame = frame
       @sci = Scintilla::ScintillaTermbox.new do |scn|
         code = scn['code']
@@ -34,6 +33,7 @@ module Mrbmacs
       @sci.sci_set_margin_widthn(1, 1)
       @sci.sci_set_margin_typen(1, 0)
     end
+
     def set_theme(theme)
       set_theme_base(theme)
       @sci.sci_set_fold_margin_colour(true, theme.background_color)

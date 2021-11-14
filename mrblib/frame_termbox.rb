@@ -10,6 +10,42 @@ module Mrbmacs
   end
 
   class Frame
+    TERMBOX_KEYMAP = {
+      Termbox::KEY_CTRL_A => 'C-a',
+      Termbox::KEY_CTRL_B => 'C-b',
+      Termbox::KEY_CTRL_C => 'C-c',
+      Termbox::KEY_CTRL_D => 'C-d',
+      Termbox::KEY_CTRL_E => 'C-e',
+      Termbox::KEY_CTRL_F => 'C-f',
+      Termbox::KEY_CTRL_G => 'C-g',
+      Termbox::KEY_CTRL_H => 'C-h',
+      Termbox::KEY_CTRL_I => 'C-i',
+      Termbox::KEY_CTRL_J => 'C-j',
+      Termbox::KEY_CTRL_K => 'C-k',
+      Termbox::KEY_CTRL_L => 'C-l',
+      Termbox::KEY_CTRL_M => 'C-m',
+      Termbox::KEY_CTRL_N => 'C-n',
+      Termbox::KEY_CTRL_O => 'C-o',
+      Termbox::KEY_CTRL_P => 'C-p',
+      Termbox::KEY_CTRL_Q => 'C-q',
+      Termbox::KEY_CTRL_R => 'C-r',
+      Termbox::KEY_CTRL_S => 'C-s',
+      Termbox::KEY_CTRL_T => 'C-t',
+      Termbox::KEY_CTRL_U => 'C-u',
+      Termbox::KEY_CTRL_V => 'C-v',
+      Termbox::KEY_CTRL_W => 'C-w',
+      Termbox::KEY_CTRL_X => 'C-x',
+      Termbox::KEY_CTRL_Y => 'C-y',
+      Termbox::KEY_CTRL_Z => 'C-z',
+      Termbox::KEY_CTRL_F => 'C-f',
+      Termbox::KEY_TAB => 'Tab',
+      Termbox::KEY_ENTER => 'Enter',
+      Termbox::KEY_ESC => 'Escape',
+      Termbox::KEY_CTRL_BACKSLASH => 'C-\\',
+      Termbox::KEY_CTRL_SLASH => 'C-/',
+      Termbox::KEY_CTRL_UNDERSCORE => 'C-_'
+    }
+
     TERMBOX_KEYSYMS = {
       Termbox::KEY_INSERT => Scintilla::SCK_INSERT,
       Termbox::KEY_DELETE => Scintilla::SCK_DELETE,
@@ -23,18 +59,23 @@ module Mrbmacs
       Termbox::KEY_TAB => Scintilla::SCK_TAB,
       Termbox::KEY_ENTER => Scintilla::SCK_RETURN,
       Termbox::KEY_SPACE => 32,
-      Termbox::KEY_BACKSPACE2 => Scintilla::SCK_BACK
+      Termbox::KEY_BACKSPACE2 => Scintilla::SCK_BACK,
+      Termbox::KEY_MOUSE_LEFT => 1,
+      Termbox::KEY_MOUSE_MIDDLE => 2,
+      Termbox::KEY_MOUSE_RIGHT => 3,
+      Termbox::KEY_MOUSE_WHEEL_UP => 4,
+      Termbox::KEY_MOUSE_WHEEL_DOWN => 5
     }
     def initialize(buffer)
       Termbox.init
-      Termbox.select_output_mode(5)
+      Termbox.select_output_mode(Termbox::OUTPUT_TRUECOLOR)
+      Termbox.select_input_mode(Termbox::INPUT_ESC | Termbox::INPUT_MOUSE)
       @sci_notifications = []
       @edit_win = EditWindowTermbox.new(self, buffer, 0, 0, Termbox.width, Termbox.height - 1)
       @view_win = @edit_win.sci
       @echo_win = new_echowin
       @edit_win_list = [@edit_win]
       @view_win.refresh
-$stderr.puts "frame end"
     end
 
     def new_echowin
@@ -50,18 +91,38 @@ $stderr.puts "frame end"
       echo_win.sci_set_margin_typen(3, 4)
       echo_win.sci_set_caretstyle Scintilla::CARETSTYLE_BLOCK_AFTER | Scintilla::CARETSTYLE_OVERSTRIKE_BLOCK | Scintilla::CARETSTYLE_BLOCK
       echo_win.sci_set_wrap_mode(Scintilla::SC_WRAP_CHAR)
-#      echo_win.sci_autoc_set_max_height(16)
+      echo_win.sci_autoc_set_max_height(16)
       echo_win.refresh
       echo_win
     end
 
     def send_key(ev, win = nil)
       win = @view_win if win.nil?
-      c = ev.ch.ord
-      if TERMBOX_KEYSYMS.key? ev.key
-        c = TERMBOX_KEYSYMS[ev.key]
+      case ev.type
+      when Termbox::EVENT_KEY
+        c = ev.ch.ord
+        if TERMBOX_KEYSYMS.key? ev.key
+          c = TERMBOX_KEYSYMS[ev.key]
+        end
+        if c != 0
+          win.send_key(c, false, false, false)
+        end
+      when Termbox::EVENT_MOUSE
+        time = Time.now
+        millis = (time.to_i * 1000 + time.usec / 1000).to_i
+        event = Scintilla::SCM_PRESS
+        if ev.mod == Termbox::MOD_MOTION
+          event = Scintilla::SCM_DRAG
+        end
+        c = 0
+        if TERMBOX_KEYSYMS.key? ev.key
+          c = TERMBOX_KEYSYMS[ev.key]
+        end
+        if ev.key == Termbox::KEY_MOUSE_RELEASE
+          event = Scintilla::SCM_RELEASE
+        end
+        win.send_mouse(event, millis, c, ev.y, ev.x, false, false, false)
       end
-      win.send_key(c, false, false, false)
     end
 
     def modeline(app)
@@ -71,19 +132,35 @@ $stderr.puts "frame end"
       else
         mode_str[@edit_win.width - 1] = ' '
       end
-$stderr.puts mode_str
       (0..(mode_str.length - 1)).each do |x|
         Termbox.change_cell(@edit_win.x1 + x, @edit_win.y2,
-                            Termbox.utf8_char_to_unicode(mode_str[x]), 0x000000, 0xffffff)
+                            Termbox.utf8_char_to_unicode(mode_str[x]), 0x181818, 0xe8e8e8)
       end
     end
 
-    def waitkey
-      while ev = Termbox.poll_event
-        if ev.type == Termbox::EVENT_KEY
-          return ev
+    def modeline_refresh(app)
+      modeline(app)
+    end
+
+    def waitkey(_win = nil)
+      [nil, Termbox.poll_event]
+    end
+
+    def strfkey(ev)
+      key_str = ''
+      if TERMBOX_KEYMAP.key? ev.key
+        key_str = TERMBOX_KEYMAP[ev.key]
+      else
+        if ev.mod == Termbox::MOD_ALT
+          key_str = 'M-'
+        end
+        if ev.key == 0 && ev.ch == 0.chr
+          key_str += 'C- '
+        else
+          key_str += ev.ch
         end
       end
+      key_str
     end
 
     def echo_gets(prompt, text = '', &block)
@@ -98,8 +175,8 @@ $stderr.puts mode_str
       input_text = nil
       last_input = nil
       while true
-        ev = waitkey
-        key_str = Mrbmacs.strfkey(ev)
+        ret, ev = waitkey
+        key_str = strfkey(ev)
         if key_str == 'C-g'
           @echo_win.sci_clear_all
           @echo_win.sci_add_text('Quit')
@@ -180,6 +257,24 @@ $stderr.puts mode_str
         [list.join(' '), input_text.length]
       end
       buffername
+    end
+
+    def y_or_n(prompt)
+      if $DEBUG
+        $stderr.puts prompt
+      end
+      @echo_win.sci_clear_all
+      echo_set_prompt(prompt)
+      ret, ev = waitkey
+      key_str = strfkey(ev)
+      echo_set_prompt('')
+      if key_str == 'Y' or key_str == 'y'
+        return true
+      elsif key_str == 'C-g'
+        return false
+      else
+        return false
+      end
     end
   end
 end

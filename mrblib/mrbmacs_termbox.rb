@@ -1,25 +1,37 @@
 module Mrbmacs
-  class ApplicationTermbox < Application
+  class ApplicationTermbox < ApplicationTerminal
     def add_buffer_to_frame(buffer) end
 
     def doscan(prefix = '')
-      ev = @frame.waitkey
-      key_str = prefix + Mrbmacs.strfkey(ev)
-      key_str.gsub!(/^Escape /, 'M-')
-$stderr.puts key_str
-      command = key_scan(key_str)
-$stderr.puts command
-      if command != nil
-        if command.is_a?(Integer)
-          return @frame.view_win.send_message(command, nil, nil)
-        end
-        if command == 'prefix'
-          return doscan(key_str + ' ')
+      loop do
+        ev = nil
+        if prefix == ''
+          ev = Termbox.peek_event(1)
         else
-          return extend(command)
+          ev = Termbox.poll_event
+        end
+        if ev == nil
+          return
+        end
+
+        key_str = prefix + @frame.strfkey(ev)
+        key_str.gsub!(/^Escape /, 'M-')
+        command = key_scan(key_str)
+        if command != nil
+          if command.is_a?(Integer)
+            return @frame.view_win.send_message(command, nil, nil)
+          end
+          if command == 'prefix'
+            return doscan(key_str + ' ')
+          else
+            extend(command)
+            prefix = ''
+          end
+        else
+          @frame.send_key(ev)
+          prefix = ''
         end
       end
-      @frame.send_key(ev)
     end
 
     def editloop
@@ -36,10 +48,10 @@ $stderr.puts command
         end
         @frame.view_win.refresh
         # set cursor pos for IME
-        current_pos = @frame.view_win.sci_get_current_pos
-        x = @frame.view_win.sci_point_x_from_position(0, current_pos)
-        y = @frame.view_win.sci_point_y_from_position(0, current_pos)
-#        @frame.view_win.setpos(y, x)
+        # current_pos = @frame.view_win.sci_get_current_pos
+        # x = @frame.view_win.sci_point_x_from_position(0, current_pos)
+        # y = @frame.view_win.sci_point_y_from_position(0, current_pos)
+        # @frame.view_win.setpos(y, x)
 
         # IO event
         readable, _writable = IO.select(@readings)
@@ -57,15 +69,6 @@ $stderr.puts command
 
         @frame.view_win.refresh
         @frame.modeline(self)
-      end
-    end
-
-    def editloop_old
-      @frame.view_win.refresh
-      loop do
-        doscan('')
-        @frame.modeline(self)
-        @frame.view_win.refresh
       end
     end
   end
