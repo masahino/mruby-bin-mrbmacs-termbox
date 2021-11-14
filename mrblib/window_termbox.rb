@@ -15,6 +15,7 @@ module Mrbmacs
       @width = width
       @height = height
       @sci.resize(@width, @height - 1)
+      @sci.move(@x1, @y1)
       #      @sci.move_window(@y1, @x1)
       @sci.sci_set_codepage(Scintilla::SC_CP_UTF8)
       @sci.sci_set_mod_event_mask(Scintilla::SC_MOD_INSERTTEXT | Scintilla::SC_MOD_DELETETEXT)
@@ -42,6 +43,13 @@ module Mrbmacs
         @sci.sci_marker_set_fore(n, theme.foreground_color)
         @sci.sci_marker_set_back(n, theme.background_color)
       end
+    end
+
+    def compute_area
+      @width = @x2 - @x1 + 1
+      @height = @y2 - @y1 + 1
+      @sci.move(@x1, @y1)
+      @sci.resize(@width, @height - 1)
     end
   end
 end

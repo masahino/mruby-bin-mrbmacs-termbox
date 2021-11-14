@@ -78,6 +78,10 @@ module Mrbmacs
       @view_win.refresh
     end
 
+    def new_editwin(buffer, x, y, width, height)
+      EditWindowTermbox.new(self, buffer, x, y, width, height)
+    end
+
     def new_echowin
       echo_win = ScintillaTermbox.new
       echo_win.resize(Termbox.width, 1)
@@ -125,15 +129,15 @@ module Mrbmacs
       end
     end
 
-    def modeline(app)
+    def modeline(app, win = @edit_win)
       mode_str = get_mode_str(app)
-      if mode_str.length < @edit_win.width - 1
-        mode_str += '-' * (@edit_win.width - mode_str.length - 1)
+      if mode_str.length < win.width - 1
+        mode_str += '-' * (win.width - mode_str.length - 1)
       else
-        mode_str[@edit_win.width - 1] = ' '
+        mode_str[win.width - 1] = ' '
       end
       (0..(mode_str.length - 1)).each do |x|
-        Termbox.change_cell(@edit_win.x1 + x, @edit_win.y2,
+        Termbox.change_cell(win.x1 + x, win.y2,
                             Termbox.utf8_char_to_unicode(mode_str[x]), 0x181818, 0xe8e8e8)
       end
     end
@@ -275,6 +279,21 @@ module Mrbmacs
       else
         return false
       end
+    end
+
+    def delete_other_window
+      @edit_win_list.each do |w|
+        if w != @edit_win
+          w.delete
+        end
+      end
+      @edit_win_list.delete_if { |w| w != @edit_win }
+      @edit_win.x1 = 0
+      @edit_win.x2 = Termbox.width - 1
+      @edit_win.y1 = 0
+      @edit_win.y2 = Termbox.height - 1 - 1
+      @edit_win.compute_area
+      @edit_win.refresh
     end
   end
 end
