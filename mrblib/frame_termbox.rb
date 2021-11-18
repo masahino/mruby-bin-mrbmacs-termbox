@@ -84,6 +84,7 @@ module Mrbmacs
 
     def new_echowin
       echo_win = ScintillaTermbox.new
+      echo_win.sci_set_vscrollbar(false)
       echo_win.resize(Termbox.width, 1)
       echo_win.move(0, Termbox.height - 1)
       echo_win.sci_style_set_fore(Scintilla::STYLE_DEFAULT, 0xffffff)
@@ -132,7 +133,7 @@ module Mrbmacs
     def modeline(app, win = @edit_win)
       mode_str = get_mode_str(app)
       if mode_str.length < win.width - 1
-        mode_str += '-' * (win.width - mode_str.length - 1)
+        mode_str += '-' * (win.width - mode_str.length)
       else
         mode_str[win.width - 1] = ' '
       end
