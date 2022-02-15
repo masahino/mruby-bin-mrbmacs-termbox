@@ -47,7 +47,7 @@ MRuby::Build.new do |conf|
 
   conf.gem "#{MRUBY_ROOT}/.."
   conf.linker.libraries << "stdc++"
-  conf.cc.flags << "-stdlib=libc++"
+  #  conf.cc.flags << "-stdlib=libc++"
 
   # conf.cc do |cc|
   #   cc.command = ENV['CC'] || 'gcc'
