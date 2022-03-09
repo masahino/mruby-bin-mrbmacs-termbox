@@ -24,10 +24,10 @@ assert('split window') do
   assert_equal "*scratch*", lines[1]
 end
 
-def run_edit_test(test_name)
+def run_edit_test(test_name, input_file = 'test.input')
   edit_file = File.dirname(__FILE__) + "/#{test_name}.input"
   output_file = "#{$script_dir}#{test_name}.output"
-  FileUtils.cp File.dirname(__FILE__) + "/test.input", edit_file
+  FileUtils.cp File.dirname(__FILE__) + '/' + input_file, edit_file
   Timeout.timeout(10) do
     stdout, stderr, status =
     Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{$script_dir}#{test_name} #{edit_file}")
@@ -101,6 +101,10 @@ end
 
 assert('yank') do
   run_edit_test('yank')
+end
+
+assert('comment-line') do
+  run_edit_test('comment-line', 'test2.input')
 end
 
 ##########
