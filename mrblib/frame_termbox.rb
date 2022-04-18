@@ -106,27 +106,17 @@ module Mrbmacs
       case ev.type
       when Termbox::EVENT_KEY
         c = ev.ch.ord
-        if TERMBOX_KEYSYMS.key? ev.key
-          c = TERMBOX_KEYSYMS[ev.key]
-        end
-        if c != 0
-          win.send_key(c, false, false, false)
-        end
+        c = TERMBOX_KEYSYMS[ev.key] if TERMBOX_KEYSYMS.key? ev.key
+        win.send_key(c, false, false, false) if c != 0
       when Termbox::EVENT_MOUSE
         time = Time.now
         millis = (time.to_i * 1000 + time.usec / 1000).to_i
-        event = Scintilla::SCM_PRESS
-        if ev.mod == Termbox::MOD_MOTION
-          event = Scintilla::SCM_DRAG
-        end
+        mouse_event = Scintilla::SCM_PRESS
+        mouse_event = Scintilla::SCM_DRAG if ev.mod == Termbox::MOD_MOTION
         c = 0
-        if TERMBOX_KEYSYMS.key? ev.key
-          c = TERMBOX_KEYSYMS[ev.key]
-        end
-        if ev.key == Termbox::KEY_MOUSE_RELEASE
-          event = Scintilla::SCM_RELEASE
-        end
-        win.send_mouse(event, millis, c, ev.y, ev.x, false, false, false)
+        c = TERMBOX_KEYSYMS[ev.key] if TERMBOX_KEYSYMS.key? ev.key
+        mouse_event = Scintilla::SCM_RELEASE if ev.key == Termbox::KEY_MOUSE_RELEASE
+        win.send_mouse(mouse_event, millis, c, ev.y, ev.x, false, false, false)
       end
     end
 
