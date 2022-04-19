@@ -9,6 +9,7 @@ class Keytest
 end
 
 assert('strfkey') do
+  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
   frame = Mrbmacs::Frame.new(Mrbmacs::Buffer.new)
   assert_equal 'C-a', frame.strfkey(Keytest.new(Termbox::EVENT_KEY, 0, Termbox::KEY_CTRL_A, 0))
   assert_equal 'a', frame.strfkey(Keytest.new(Termbox::EVENT_KEY, 0, 0, 'a'))
