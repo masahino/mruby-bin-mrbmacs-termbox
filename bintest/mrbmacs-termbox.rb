@@ -1,40 +1,47 @@
 require 'open3'
 require 'fileutils'
 require 'timeout'
-$script_dir = File.dirname(__FILE__) + "/scripts/"
 
 assert('init buffer') do
-  stdout, stderr, status = Open3.capture3("#{cmd('mrbmacs-termbox')} -l #{$script_dir}init_buffer")
+  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
+  _stdout, stderr, status =
+    Open3.capture3("#{cmd('mrbmacs-termbox')} -l #{File.dirname(__FILE__)}/scripts/init_buffer")
   assert_equal 0, status.to_i
   lines = stderr.split("\n")
-  assert_equal "*scratch*", lines[0]
+  assert_equal '*scratch*', lines[0]
 end
 
 assert('split window') do
-  stdout, stderr, status = Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{$script_dir}split_window")
+  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
+  _stdout, stderr, status =
+    Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window")
   assert_equal 0, status.to_i
   assert_equal 0, stderr.length
 end
 
 assert('split window') do
-  stdout, stderr, status = Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{$script_dir}split_window2")
+  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
+  _stdout, stderr, status =
+    Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window2")
   assert_equal 0, status.to_i
   lines = stderr.split("\n")
-  assert_equal "*scratch*", lines[0]
-  assert_equal "*scratch*", lines[1]
+  assert_equal '*scratch*', lines[0]
+  assert_equal '*scratch*', lines[1]
 end
 
 def run_edit_test(test_name, input_file = 'test.input')
+  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
+
   edit_file = File.dirname(__FILE__) + "/#{test_name}.input"
-  output_file = "#{$script_dir}#{test_name}.output"
-  FileUtils.cp File.dirname(__FILE__) + '/' + input_file, edit_file
+  output_file = "#{File.dirname(__FILE__)}/scripts/#{test_name}.output"
+  FileUtils.cp "#{File.dirname(__FILE__)}/#{input_file}", edit_file
   Timeout.timeout(10) do
-    stdout, stderr, status =
-    Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{$script_dir}#{test_name} #{edit_file}")
+    _stdout, _stderr, _status =
+      Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/#{test_name} #{edit_file}")
   end
-  expected_text = File.open(output_file, "r").read
-  actual_text = File.open(edit_file, "r").read
-#  assert_true FileUtils.cmp(edit_file, output_file)
+  expected_text = File.open(output_file, 'r').read
+  actual_text = File.open(edit_file, 'r').read
+  #  assert_true FileUtils.cmp(edit_file, output_file)
   assert_equal expected_text, actual_text
   File.delete edit_file
 end
