@@ -8,6 +8,7 @@ jobs:
     timeout-minutes: 10
     env:
       MRUBY_CONFIG: ci/gcc-clang
+      TERM: xterm
       CC: gcc
     steps:
       - uses: actions/checkout@v2.4.0
@@ -15,5 +16,14 @@ jobs:
         run: ruby -v
       - name: Compiler version
         run: ${{ env.CC }} --version
-      - name: Build and test
-        run: ./build.sh && ./build.sh test
+      - name: Build
+        run: ./build.sh
+      - name: upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: mrbmacs-termbox
+          path: mruby/bin/mrbmacs-termbox
+      - name: Setup faketty
+        uses: Yuri6037/Action-FakeTTY@v1.1
+      - name: Test
+        run: faketty ./build.sh test

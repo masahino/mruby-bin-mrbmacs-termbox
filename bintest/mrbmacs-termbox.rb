@@ -3,6 +3,7 @@ require 'fileutils'
 require 'timeout'
 
 assert('init buffer') do
+  skip if ENV['GITHUB_ACTIONS']
   skip '/dev/tty is not found' unless File.exist?('/dev/tty')
   _stdout, stderr, status =
     Open3.capture3("#{cmd('mrbmacs-termbox')} -l #{File.dirname(__FILE__)}/scripts/init_buffer")
@@ -12,6 +13,7 @@ assert('init buffer') do
 end
 
 assert('split window') do
+  skip if ENV['GITHUB_ACTIONS']
   skip '/dev/tty is not found' unless File.exist?('/dev/tty')
   _stdout, stderr, status =
     Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window")
@@ -20,6 +22,7 @@ assert('split window') do
 end
 
 assert('split window') do
+  skip if ENV['GITHUB_ACTIONS']
   skip '/dev/tty is not found' unless File.exist?('/dev/tty')
   _stdout, stderr, status =
     Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window2")
@@ -30,6 +33,7 @@ assert('split window') do
 end
 
 def run_edit_test(test_name, input_file = 'test.input')
+  skip if ENV['GITHUB_ACTIONS']
   skip '/dev/tty is not found' unless File.exist?('/dev/tty')
 
   edit_file = File.dirname(__FILE__) + "/#{test_name}.input"
