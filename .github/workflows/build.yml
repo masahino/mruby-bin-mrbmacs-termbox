@@ -27,3 +27,27 @@ jobs:
         uses: Yuri6037/Action-FakeTTY@v1.1
       - name: Test
         run: faketty ./build.sh test
+
+  macOS:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    env:
+      MRUBY_CONFIG: ci/gcc-clang
+      CC: clang
+    steps:
+      - uses: actions/checkout@v3
+      - name: Ruby version
+        run: ruby -v
+      - name: Compiler version
+        run: ${{ env.CC }} --version
+      - name: Build
+        run: ./build.sh
+      - name: upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: mrbmacs-termbox
+          path: mruby/bin/mrbmacs-termbox
+      - name: Setup faketty
+        uses: Yuri6037/Action-FakeTTY@v1.1
+      - name: Test
+        run: faketty ./build.sh test
