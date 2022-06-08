@@ -31,7 +31,7 @@ module Mrbmacs
     def init_margin_termbox
       set_margin
       @sci.sci_set_margin_maskn(0, ~Scintilla::SC_MASK_FOLDERS)
-      @sci.sci_set_margin_widthn(1, 1)
+      @sci.sci_set_margin_widthn(1, 2)
       @sci.sci_set_margin_typen(1, 0)
     end
 
