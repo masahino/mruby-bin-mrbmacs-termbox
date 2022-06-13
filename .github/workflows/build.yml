@@ -81,7 +81,7 @@ jobs:
           --only-site --site http://mirrors.kernel.org/sourceware/cygwin/
           --root ${{ env.cygwin-root }}
           --local-package-dir ${{ env.package-dir }}
-          --packages gcc-core,gcc-g++,ruby,libonig-devel,make
+          --packages gcc-core,gcc-g++,ruby,libonig-devel,make,git
       - name: Set PATH for Cygwin
         run: |
           echo '::set-env name=PATH::${{ env.cygwin-root }}\bin;${{ env.cygwin-root }}\usr\bin'
