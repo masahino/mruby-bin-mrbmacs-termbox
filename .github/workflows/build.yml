@@ -92,7 +92,7 @@ jobs:
         run: ${{ env.CC }} --version
       - name: Build and test
         shell: cmd
-        run: ./build.sh
+        run: bash build.sh
       - name: Set PATH for cache archiving (tar)
         # set Windows path so that Cygwin tar is not used for cache archiving
         run: echo '::set-env name=PATH::C:\windows\System32'
