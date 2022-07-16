@@ -43,7 +43,19 @@ module Mrbmacs
       Termbox::KEY_ESC => 'Escape',
       Termbox::KEY_CTRL_BACKSLASH => 'C-\\',
       Termbox::KEY_CTRL_SLASH => 'C-/',
-      Termbox::KEY_CTRL_UNDERSCORE => 'C-_'
+      Termbox::KEY_CTRL_UNDERSCORE => 'C-_',
+      Termbox::KEY_F1 => 'F1',
+      Termbox::KEY_F2 => 'F2',
+      Termbox::KEY_F3 => 'F3',
+      Termbox::KEY_F4 => 'F4',
+      Termbox::KEY_F5 => 'F5',
+      Termbox::KEY_F6 => 'F6',
+      Termbox::KEY_F7 => 'F7',
+      Termbox::KEY_F8 => 'F8',
+      Termbox::KEY_F9 => 'F9',
+      Termbox::KEY_F10 => 'F10',
+      Termbox::KEY_F11 => 'F11',
+      Termbox::KEY_F12 => 'F12'
     }
 
     TERMBOX_KEYSYMS = {
