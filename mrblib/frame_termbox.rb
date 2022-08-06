@@ -56,7 +56,7 @@ module Mrbmacs
       Termbox::KEY_F10 => 'F10',
       Termbox::KEY_F11 => 'F11',
       Termbox::KEY_F12 => 'F12'
-    }
+    }.freeze
 
     TERMBOX_KEYSYMS = {
       Termbox::KEY_INSERT => Scintilla::SCK_INSERT,
@@ -77,7 +77,8 @@ module Mrbmacs
       Termbox::KEY_MOUSE_RIGHT => 3,
       Termbox::KEY_MOUSE_WHEEL_UP => 4,
       Termbox::KEY_MOUSE_WHEEL_DOWN => 5
-    }
+    }.freeze
+
     def initialize(buffer)
       Termbox.init
       Termbox.select_output_mode(Termbox::OUTPUT_TRUECOLOR)
@@ -90,8 +91,8 @@ module Mrbmacs
       @view_win.refresh
     end
 
-    def new_editwin(buffer, x, y, width, height)
-      EditWindowTermbox.new(self, buffer, x, y, width, height)
+    def new_editwin(buffer, left, top, width, height)
+      EditWindowTermbox.new(self, buffer, left, top, width, height)
     end
 
     def new_echowin
@@ -101,34 +102,27 @@ module Mrbmacs
       echo_win.move(0, Termbox.height - 1)
       echo_win.sci_style_set_fore(Scintilla::STYLE_DEFAULT, 0xffffff)
       echo_win.sci_style_set_back(Scintilla::STYLE_DEFAULT, 0x000000)
-      echo_win.sci_style_clear_all
-      echo_win.sci_set_focus(false)
-      echo_win.sci_autoc_set_choose_single(1)
-      echo_win.sci_autoc_set_auto_hide(false)
-      echo_win.sci_set_margin_typen(3, 4)
-      echo_win.sci_set_caretstyle Scintilla::CARETSTYLE_BLOCK_AFTER | Scintilla::CARETSTYLE_OVERSTRIKE_BLOCK | Scintilla::CARETSTYLE_BLOCK
-      echo_win.sci_set_wrap_mode(Scintilla::SC_WRAP_CHAR)
-      echo_win.sci_autoc_set_max_height(16)
+      echo_style_base(echo_win)
       echo_win.refresh
       echo_win
     end
 
-    def send_key(ev, win = nil)
+    def send_key(event, win = nil)
       win = @view_win if win.nil?
-      case ev.type
+      case event.type
       when Termbox::EVENT_KEY
-        c = ev.ch.ord
-        c = TERMBOX_KEYSYMS[ev.key] if TERMBOX_KEYSYMS.key? ev.key
+        c = event.ch.ord
+        c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
         win.send_key(c, false, false, false) if c != 0
       when Termbox::EVENT_MOUSE
         time = Time.now
         millis = (time.to_i * 1000 + time.usec / 1000).to_i
         mouse_event = Scintilla::SCM_PRESS
-        mouse_event = Scintilla::SCM_DRAG if ev.mod == Termbox::MOD_MOTION
+        mouse_event = Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
         c = 0
-        c = TERMBOX_KEYSYMS[ev.key] if TERMBOX_KEYSYMS.key? ev.key
-        mouse_event = Scintilla::SCM_RELEASE if ev.key == Termbox::KEY_MOUSE_RELEASE
-        win.send_mouse(mouse_event, millis, c, ev.y, ev.x, false, false, false)
+        c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
+        mouse_event = Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
+        win.send_mouse(mouse_event, millis, c, event.y, event.x, false, false, false)
       end
     end
 
@@ -153,18 +147,18 @@ module Mrbmacs
       [nil, Termbox.poll_event]
     end
 
-    def strfkey(ev)
+    def strfkey(event)
       key_str = ''
-      if TERMBOX_KEYMAP.key? ev.key
-        key_str = TERMBOX_KEYMAP[ev.key]
+      if TERMBOX_KEYMAP.key? event.key
+        key_str = TERMBOX_KEYMAP[event.key]
       else
-        if ev.mod == Termbox::MOD_ALT
+        if event.mod == Termbox::MOD_ALT
           key_str = 'M-'
         end
-        if ev.key == 0 && ev.ch == 0.chr
+        if event.key == 0 && event.ch == 0.chr
           key_str += 'C- '
         else
-          key_str += ev.ch
+          key_str += event.ch
         end
       end
       key_str
@@ -182,7 +176,7 @@ module Mrbmacs
       input_text = nil
       last_input = nil
       while true
-        ret, ev = waitkey
+        _ret, ev = waitkey
         key_str = strfkey(ev)
         if key_str == 'C-g'
           @echo_win.sci_clear_all
@@ -272,7 +266,7 @@ module Mrbmacs
       end
       @echo_win.sci_clear_all
       echo_set_prompt(prompt)
-      ret, ev = waitkey
+      _ret, ev = waitkey
       key_str = strfkey(ev)
       echo_set_prompt('')
       if key_str == 'Y' or key_str == 'y'

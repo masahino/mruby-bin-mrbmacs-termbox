@@ -10,9 +10,7 @@ module Mrbmacs
         else
           ev = Termbox.poll_event
         end
-        if ev == nil
-          return
-        end
+        return if ev == nil
 
         key_str = prefix + @frame.strfkey(ev)
         key_str.gsub!(/^Escape /, 'M-')
@@ -43,6 +41,10 @@ module Mrbmacs
           e = @frame.sci_notifications.shift
           if $DEBUG
             $stderr.puts e['code']
+            if e['code'] == 2009
+              $stderr.puts "message:#{e['message']}"
+              $stderr.puts "wParam:#{e['w_param']}, lParam:#{e['l_param']}"
+            end
           end
           call_sci_event(e)
         end
