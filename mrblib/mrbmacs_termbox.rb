@@ -10,30 +10,25 @@ module Mrbmacs
         else
           ev = Termbox.poll_event
         end
-        return if ev == nil
+        return if ev.nil?
 
         key_str = prefix + @frame.strfkey(ev)
         key_str.gsub!(/^Escape /, 'M-')
         command = key_scan(key_str)
         if command != nil
-          if command.is_a?(Integer)
-            return @frame.view_win.send_message(command, nil, nil)
-          end
-          if command == 'prefix'
-            return doscan(key_str + ' ')
-          else
-            extend(command)
-            prefix = ''
-          end
+          return @frame.view_win.send_message(command, nil, nil) if command.is_a?(Integer)
+          return doscan("#{key_str} ") if command == 'prefix'
+
+          extend(command)
         else
           @frame.send_key(ev)
-          prefix = ''
         end
+        prefix = ''
       end
     end
 
     def editloop
-      add_io_read_event(STDIN) { |app, io| doscan }
+      add_io_read_event($stdin) { doscan }
       @frame.view_win.refresh
       loop do
         # notification event
@@ -41,10 +36,6 @@ module Mrbmacs
           e = @frame.sci_notifications.shift
           if $DEBUG
             $stderr.puts e['code']
-            if e['code'] == 2009
-              $stderr.puts "message:#{e['message']}"
-              $stderr.puts "wParam:#{e['w_param']}, lParam:#{e['l_param']}"
-            end
           end
           call_sci_event(e)
         end
@@ -58,14 +49,14 @@ module Mrbmacs
         # IO event
         readable, _writable = IO.select(@readings)
         readable.each do |ri|
-          if @io_handler[ri] != nil
-            begin
-              @io_handler[ri].call(self, ri)
-            rescue => e
-              @logger.error e.to_s
-              @logger.error e.backtrace
-              @frame.echo_puts(e.to_s)
-            end
+          next if @io_handler[ri].nil?
+
+          begin
+            @io_handler[ri].call(self, ri)
+          rescue => e
+            @logger.error e.to_s
+            @logger.error e.backtrace
+            @frame.echo_puts(e.to_s)
           end
         end
 

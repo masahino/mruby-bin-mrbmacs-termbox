@@ -1,10 +1,8 @@
 module Mrbmacs
   def self.common_str(comp_list)
-    max_len = comp_list.map { |i| i.length }.sort[0]
+    max_len = comp_list.map { |i| i.length }.min
     (1..max_len).reverse_each do |i|
-      if comp_list.map { |f| f[0..i] }.sort.uniq.size == 1
-        return comp_list[0][0..i]
-      end
+      return comp_list[0][0..i] if comp_list.map { |f| f[0..i] }.sort.uniq.size == 1
     end
     nil
   end
@@ -174,8 +172,8 @@ module Mrbmacs
       @echo_win.sci_add_text(prefix_text.bytesize, prefix_text)
       @echo_win.refresh
       input_text = nil
-      last_input = nil
-      while true
+
+      loop do
         _ret, ev = waitkey
         key_str = strfkey(ev)
         if key_str == 'C-g'
@@ -269,20 +267,19 @@ module Mrbmacs
       _ret, ev = waitkey
       key_str = strfkey(ev)
       echo_set_prompt('')
-      if key_str == 'Y' or key_str == 'y'
-        return true
-      elsif key_str == 'C-g'
-        return false
+      case key_str
+      when 'Y', 'y'
+        true
+      when 'C-g'
+        false
       else
-        return false
+        false
       end
     end
 
     def delete_other_window
       @edit_win_list.each do |w|
-        if w != @edit_win
-          w.delete
-        end
+        w.delete if w != @edit_win
       end
       @edit_win_list.delete_if { |w| w != @edit_win }
       @edit_win.x1 = 0
