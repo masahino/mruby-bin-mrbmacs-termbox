@@ -12,7 +12,7 @@ module Mrbmacs
       init_sci_default
       init_margin_termbox
       set_buffer(buffer)
-
+      @mode_win = ''
       @sci.sci_set_focus(true)
       @sci.refresh
     end
@@ -39,6 +39,24 @@ module Mrbmacs
       @height = @y2 - @y1 + 1
       @sci.move(@x1, @y1)
       @sci.resize(@width, @height - 1)
+    end
+
+    def refresh_modeline
+      fore_color = 0x181818
+      back_color = 0xb8b8b8
+      if @sci.sci_get_focus == false
+        back_color = 0x585858
+        fore_color = 0xb8b8b8
+      end
+      (0..(@mode_win.length - 1)).each do |x|
+        Termbox.change_cell(@x1 + x, @y2,
+                            Termbox.utf8_char_to_unicode(@mode_win[x]), fore_color, back_color)
+      end
+    end
+
+    def focus_out
+      super
+      refresh_modeline
     end
   end
 end

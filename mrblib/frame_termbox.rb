@@ -113,6 +113,11 @@ module Mrbmacs
         c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
         win.send_key(c, false, false, false) if c != 0
       when Termbox::EVENT_MOUSE
+        tmp_win = get_edit_win_from_pos(event.y, event.x)
+        if tmp_win.sci != win && tmp_win != nil
+          switch_window(tmp_win)
+          win = tmp_win.sci
+        end
         time = Time.now
         millis = (time.to_i * 1000 + time.usec / 1000).to_i
         mouse_event = Scintilla::SCM_PRESS
@@ -131,10 +136,8 @@ module Mrbmacs
       else
         mode_str[win.width - 1] = ' '
       end
-      (0..(mode_str.length - 1)).each do |x|
-        Termbox.change_cell(win.x1 + x, win.y2,
-                            Termbox.utf8_char_to_unicode(mode_str[x]), 0x181818, 0xe8e8e8)
-      end
+      win.mode_win = mode_str
+      win.refresh_modeline
     end
 
     def modeline_refresh(app)
@@ -259,9 +262,6 @@ module Mrbmacs
     end
 
     def y_or_n(prompt)
-      if $DEBUG
-        $stderr.puts prompt
-      end
       @echo_win.sci_clear_all
       echo_set_prompt(prompt)
       _ret, ev = waitkey

@@ -34,9 +34,7 @@ module Mrbmacs
         # notification event
         while @frame.sci_notifications.length > 0
           e = @frame.sci_notifications.shift
-          if $DEBUG
-            $stderr.puts e['code']
-          end
+          @logger.debug "sci notification [#{e['code']}]"
           call_sci_event(e)
         end
         @frame.view_win.refresh
