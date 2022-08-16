@@ -20,7 +20,7 @@ Scintilla base text editor written in mruby
 ## Build
 
 ```
-$ git clone https://github.com/masahino/mruby-bin-mrbmacs-curses
-$ cd mruby-bin-mrbmacs-curses
+$ git clone https://github.com/masahino/mruby-bin-mrbmacs-termbox
+$ cd mruby-bin-mrbmacs-termbox
 $ ./build.sh
 ```
