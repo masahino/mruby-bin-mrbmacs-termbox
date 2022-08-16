@@ -7,6 +7,7 @@ module Mrbmacs
     nil
   end
 
+  # Frame class for termbox
   class Frame
     TERMBOX_KEYMAP = {
       Termbox::KEY_CTRL_A => 'C-a',
@@ -16,7 +17,7 @@ module Mrbmacs
       Termbox::KEY_CTRL_E => 'C-e',
       Termbox::KEY_CTRL_F => 'C-f',
       Termbox::KEY_CTRL_G => 'C-g',
-      Termbox::KEY_CTRL_H => 'C-h',
+      # Termbox::KEY_CTRL_H => 'C-h',
       Termbox::KEY_CTRL_I => 'C-i',
       Termbox::KEY_CTRL_J => 'C-j',
       Termbox::KEY_CTRL_K => 'C-k',
@@ -36,6 +37,7 @@ module Mrbmacs
       Termbox::KEY_CTRL_Y => 'C-y',
       Termbox::KEY_CTRL_Z => 'C-z',
       Termbox::KEY_CTRL_F => 'C-f',
+      Termbox::KEY_SPACE => ' ',
       Termbox::KEY_TAB => 'Tab',
       Termbox::KEY_ENTER => 'Enter',
       Termbox::KEY_ESC => 'Escape',
@@ -105,27 +107,36 @@ module Mrbmacs
       echo_win
     end
 
+    def send_mouse(event, win)
+      tmp_win = get_edit_win_from_pos(event.y, event.x)
+      if tmp_win.sci != win && !tmp_win.nil?
+        switch_window(tmp_win)
+        win = tmp_win.sci
+      end
+      time = Time.now
+      millis = (time.to_i * 1000 + time.usec / 1000).to_i
+      mouse_event = Scintilla::SCM_PRESS
+      mouse_event = Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
+      c = 0
+      c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
+      mouse_event = Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
+      win.send_mouse(mouse_event, millis, c, event.y, event.x, false, false, false)
+    end
+
     def send_key(event, win = nil)
       win = @view_win if win.nil?
       case event.type
       when Termbox::EVENT_KEY
+        ctrl = false
         c = event.ch.ord
-        c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
-        win.send_key(c, false, false, false) if c != 0
-      when Termbox::EVENT_MOUSE
-        tmp_win = get_edit_win_from_pos(event.y, event.x)
-        if tmp_win.sci != win && tmp_win != nil
-          switch_window(tmp_win)
-          win = tmp_win.sci
+        if strfkey(event)[0..1] == 'C-'
+          ctrl = true
+          c = strfkey(event)[2].ord
         end
-        time = Time.now
-        millis = (time.to_i * 1000 + time.usec / 1000).to_i
-        mouse_event = Scintilla::SCM_PRESS
-        mouse_event = Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
-        c = 0
         c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
-        mouse_event = Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
-        win.send_mouse(mouse_event, millis, c, event.y, event.x, false, false, false)
+        win.send_key(c, false, ctrl, false) if c != 0
+      when Termbox::EVENT_MOUSE
+        send_mouse(event, win)
       end
     end
 
@@ -153,9 +164,7 @@ module Mrbmacs
       if TERMBOX_KEYMAP.key? event.key
         key_str = TERMBOX_KEYMAP[event.key]
       else
-        if event.mod == Termbox::MOD_ALT
-          key_str = 'M-'
-        end
+        key_str = 'M-' if event.mod == Termbox::MOD_ALT
         if event.key == 0 && event.ch == 0.chr
           key_str += 'C- '
         else
@@ -197,7 +206,7 @@ module Mrbmacs
         when Termbox::KEY_TAB
           input_text = @echo_win.sci_get_line(0)
           if @echo_win.sci_autoc_active == 0
-            if block != nil
+            unless block.nil?
               @echo_win.sci_autoc_cancel
               @view_win.refresh
               comp_list, len = block.call(input_text)
@@ -208,9 +217,9 @@ module Mrbmacs
             @view_win.refresh
             comp_list, len = block.call(input_text)
             common_str = Mrbmacs.common_str(comp_list.split(@echo_win.sci_autoc_get_separator.chr))
-            if common_str != nil
+            unless common_str.nil?
               @echo_win.sci_autoc_cancel
-              @echo_win.sci_add_text(common_str[len..-1].bytesize, common_str[len..-1])
+              @echo_win.sci_add_text(common_str[len..].bytesize, common_str[len..])
               @echo_win.refresh
               len = common_str.length
             end
@@ -220,9 +229,7 @@ module Mrbmacs
         else
           send_key(ev, @echo_win)
         end
-        if @echo_win.sci_margin_get_text(0) == ''
-          echo_set_prompt(prompt)
-        end
+        echo_set_prompt(prompt) if @echo_win.sci_margin_get_text(0) == ''
         @echo_win.refresh
       end
       @echo_win.sci_clear_all
@@ -242,9 +249,7 @@ module Mrbmacs
     def echo_puts(text)
       @echo_win.sci_clear_all
       echo_set_prompt('[Message]')
-      if text != nil
-        @echo_win.sci_add_text(text.bytesize, text)
-      end
+      @echo_win.sci_add_text(text.bytesize, text) unless text.nil?
       @echo_win.refresh
     end
 
