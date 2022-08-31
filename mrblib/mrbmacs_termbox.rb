@@ -1,4 +1,5 @@
 module Mrbmacs
+  # Application class for Termbox
   class ApplicationTermbox < ApplicationTerminal
     def add_buffer_to_frame(buffer) end
 
@@ -22,6 +23,9 @@ module Mrbmacs
           extend(command)
         else
           @frame.send_key(ev)
+          if @current_buffer.name != @frame.edit_win.buffer.name
+            @current_buffer = @frame.edit_win.buffer
+          end
         end
         prefix = ''
       end

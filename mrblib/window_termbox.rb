@@ -41,6 +41,11 @@ module Mrbmacs
       @sci.resize(@width, @height - 1)
     end
 
+    def refresh
+      @sci.refresh
+      refresh_modeline
+    end
+
     def refresh_modeline
       fore_color = 0x181818
       back_color = 0xb8b8b8

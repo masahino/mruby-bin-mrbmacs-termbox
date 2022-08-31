@@ -236,7 +236,7 @@ module Mrbmacs
       @echo_win.sci_set_focus(false)
       @echo_win.refresh
       @view_win.sci_set_focus(true)
-      @view_win.refresh
+      refresh_all
       input_text
     end
 
