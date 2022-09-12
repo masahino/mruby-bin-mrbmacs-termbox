@@ -12,7 +12,7 @@ MRuby::Build.new do |conf|
   enable_debug
 
   conf.cc.defines = %w(MRB_ENABLE_ALL_SYMBOLS)
-  conf.cc.defines = %w(MRB_UTF8_STRING)
+  conf.cc.defines << %w(MRB_UTF8_STRING)
 
   # Use mrbgems
   # conf.gem 'examples/mrbgems/ruby_extension_example'
@@ -43,6 +43,7 @@ MRuby::Build.new do |conf|
   conf.gem :github => 'masahino/mruby-mrbmacs-base' do |g|
   end
   conf.gem :github => 'masahino/mruby-mrbmacs-lsp'
+  conf.gem :github => 'masahino/mruby-mrbmacs-dap', :branch => 'main'
   conf.gem :github => 'masahino/mruby-mrbmacs-themes-base16', :branch => 'main'
 
   conf.gem "#{MRUBY_ROOT}/.."
@@ -109,4 +110,9 @@ MRuby::Build.new do |conf|
   conf.enable_bintest
   conf.enable_test
 #  conf.gem :github => 'mattn/mruby-require'
+  #
+#  enable_debug
+#  conf.cc.defines << %w(MRB_ENABLE_DEBUG_HOOK)
+#  conf.gem :github => 'masahino/mruby-gdb'
+
 end
