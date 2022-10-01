@@ -178,7 +178,10 @@ module Mrbmacs
 
     def delete_other_window
       @edit_win_list.each do |w|
-        w.delete if w != @edit_win
+        if w != @edit_win
+          w.sci.sci_add_refdocument(w.buffer.docpointer)
+          w.delete
+        end
       end
       @edit_win_list.delete_if { |w| w != @edit_win }
       @edit_win.x1 = 0
