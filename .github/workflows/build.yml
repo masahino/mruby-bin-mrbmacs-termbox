@@ -30,7 +30,7 @@ jobs:
 
   macOS:
     runs-on: macos-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       MRUBY_CONFIG: ci/gcc-clang
       CC: clang
@@ -54,7 +54,7 @@ jobs:
 
   Windows-Cygwin:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       CC: gcc
