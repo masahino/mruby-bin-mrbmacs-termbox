@@ -35,7 +35,7 @@ module Mrbmacs
         end
         case ev.key
         when Termbox::KEY_ENTER, Termbox::KEY_INSERT
-          if @echo_win.sci_autoc_active == 0
+          if !@echo_win.sci_autoc_active
             @echo_win.sci_autoc_cancel
             input_text = @echo_win.sci_get_line(0)
             break
@@ -44,7 +44,7 @@ module Mrbmacs
           end
         when Termbox::KEY_TAB
           input_text = @echo_win.sci_get_line(0)
-          if @echo_win.sci_autoc_active == 0
+          if !@echo_win.sci_autoc_active
             unless block.nil?
               @echo_win.sci_autoc_cancel
               refresh_all
