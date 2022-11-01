@@ -13,6 +13,12 @@ module Mrbmacs
         end
         return if ev.nil?
 
+        if ev.type == Termbox::EVENT_RESIZE
+          @frame.resize_terminal(ev.w, ev.h)
+          @current_buffer = @frame.edit_win.buffer
+          return
+        end
+
         key_str = prefix + @frame.strfkey(ev)
         key_str.gsub!(/^Escape /, 'M-')
         command = key_scan(key_str)

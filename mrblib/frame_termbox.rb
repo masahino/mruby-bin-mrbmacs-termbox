@@ -83,6 +83,8 @@ module Mrbmacs
       Termbox.init
       Termbox.select_output_mode(Termbox::OUTPUT_TRUECOLOR)
       Termbox.select_input_mode(Termbox::INPUT_ESC | Termbox::INPUT_MOUSE)
+      @width = Termbox.width
+      @height = Termbox.height
       @sci_notifications = []
       @edit_win = EditWindowTermbox.new(self, buffer, 0, 0, Termbox.width, Termbox.height - 1)
       @view_win = @edit_win.sci
@@ -97,6 +99,8 @@ module Mrbmacs
 
     def send_mouse(event, win)
       tmp_win = get_edit_win_from_pos(event.y, event.x)
+      return if tmp_win.nil?
+
       if tmp_win.sci != win && !tmp_win.nil? && win != @echo_win
         switch_window(tmp_win)
         # tmp_win.buffer.mode.set_style(tmp_win.sci, @theme)
@@ -190,6 +194,80 @@ module Mrbmacs
       @edit_win.y2 = Termbox.height - 1 - 1
       @edit_win.compute_area
       @edit_win.refresh
+    end
+
+    def extend_width(new_width)
+      @edit_win_list.each do |win|
+        if win.x2 == @width - 1
+          win.x2 = new_width - 1
+          win.compute_area
+        end
+      end
+    end
+
+    def extend_height(new_height)
+      @edit_win_list.each do |win|
+        if win.y2 == @height - 1 - 1
+          win.y2 = new_height - 1 - 1
+          win.compute_area
+        end
+      end
+    end
+
+    def shorten_width(new_width)
+      @edit_win_list.each do |win|
+        if win.x1 < new_width - 1 && new_width - 1 < win.x2
+          win.x2 = new_width - 1
+          win.compute_area
+        end
+      end
+    end
+
+    def shorten_height(new_height)
+      @edit_win_list.each do |win|
+        if win.y1 < new_height - 1 - 1 && new_height - 1 - 1 < win.y2
+          win.y2 = new_height - 1 - 1
+          win.compute_area
+        end
+      end
+    end
+
+    def delete_too_small_window(new_width, new_height)
+      @edit_win_list.each do |win|
+        if new_width - 1 < win.x1
+          $stderr.puts 'delete window'
+          delete_window(win)
+        end
+        if new_height - 1 - 1 < win.y1
+          delete_window(win)
+        end
+      end
+    end
+
+    def resize_terminal(new_width, new_height)
+      if @edit_win_list.size == 1
+        @edit_win.x2 = new_width - 1
+        @edit_win.y2 = new_height - 1 - 1
+        @edit_win.compute_area
+        @edit_win.refresh
+      else
+        if new_width < @width || new_height < @height
+          delete_too_small_window(new_width, new_height)
+        end
+        if new_width > @width
+          extend_width(new_width)
+        elsif new_width < @width
+          shorten_width(new_width)
+        end
+        if new_height > @height
+          extend_height(new_height)
+        elsif new_height < @height
+          shorten_height(new_height)
+        end
+      end
+      @width = new_width
+      @height = new_height
+      refresh_all
     end
   end
 end
