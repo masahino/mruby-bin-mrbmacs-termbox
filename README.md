@@ -25,7 +25,7 @@ Scintilla base text editor written in mruby
   + [masahino/mruby-mrbmacs-lsp](https://github.com/masahino/mruby-mrbmacs-lsp/) (optional)
     + [masahino/mruby-lsp-client](https://github.com/masahino/mruby-lsp-client/)
   + [masahino/mruby-mrbmacs-dap](https://github.com/masahino/mruby-mrbmacs-dap/) (optional)
-    + [masahino/mruby-dap-client](https://github.com/masahino/mruby--dap-client/)
+    + [masahino/mruby-dap-client](https://github.com/masahino/mruby-dap-client/)
 
 ## Build
 
