@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: ./build.sh
       - name: upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mrbmacs-termbox
           path: mruby/bin/mrbmacs-termbox
@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: ./build.sh
       - name: upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mrbmacs-termbox
           path: mruby/bin/mrbmacs-termbox
