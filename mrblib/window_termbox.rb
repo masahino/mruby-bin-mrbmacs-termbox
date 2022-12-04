@@ -1,4 +1,5 @@
 module Mrbmacs
+  # EditWindow
   class EditWindowTermbox < EditWindow
     def initialize(frame, buffer, left, top, width, height)
       super(frame, buffer, left, top, width, height)
@@ -11,7 +12,7 @@ module Mrbmacs
       compute_area
       init_sci_default
       init_margin_termbox
-      set_buffer(buffer)
+      init_buffer(buffer)
       @mode_win = ''
       @sci.sci_set_focus(true)
       @sci.refresh
