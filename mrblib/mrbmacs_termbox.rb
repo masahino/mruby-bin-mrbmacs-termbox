@@ -19,7 +19,9 @@ module Mrbmacs
           return
         end
 
-        key_str = prefix + @frame.strfkey(ev)
+        key_str = @frame.strfkey(ev)
+        add_recent_key(key_str)
+        key_str = prefix + key_str
         key_str.gsub!(/^Escape /, 'M-')
         command = key_scan(key_str)
         if command != nil
