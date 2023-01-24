@@ -107,14 +107,12 @@ module Mrbmacs
         # tmp_win.buffer.mode.set_style(tmp_win.sci, @theme)
         win = tmp_win.sci
       end
-      time = Time.now
-      millis = (time.to_i * 1000 + time.usec / 1000).to_i
       mouse_event = Scintilla::SCM_PRESS
       mouse_event = Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
       c = 0
       c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
       mouse_event = Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
-      win.send_mouse(mouse_event, millis, c, event.y, event.x, false, false, false)
+      win.send_mouse(mouse_event, c, event.y, event.x, false, false, false)
     end
 
     def send_key(event, win = nil)
