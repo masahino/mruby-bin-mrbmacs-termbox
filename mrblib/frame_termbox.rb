@@ -1,3 +1,4 @@
+# Mrbmacs
 module Mrbmacs
   def self.common_str(comp_list)
     max_len = comp_list.map { |i| i.length }.min
@@ -235,7 +236,6 @@ module Mrbmacs
     def delete_too_small_window(new_width, new_height)
       @edit_win_list.each do |win|
         if new_width - 1 < win.x1
-          $stderr.puts 'delete window'
           delete_window(win)
         end
         if new_height - 1 - 1 < win.y1
