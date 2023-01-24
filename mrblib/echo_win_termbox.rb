@@ -13,6 +13,11 @@ module Mrbmacs
       echo_win
     end
 
+    def echo_cancel
+      @echo_win.sci_clear_all
+      @echo_win.sci_add_text('Quit')
+    end
+
     def echo_gets(prompt, text = '', &block)
       @view_win.sci_set_focus(false)
       @view_win.refresh
@@ -28,8 +33,7 @@ module Mrbmacs
         _ret, ev = waitkey
         key_str = strfkey(ev)
         if key_str == 'C-g'
-          @echo_win.sci_clear_all
-          @echo_win.sci_add_text('Quit')
+          echo_cancel
           input_text = nil
           break
         end
