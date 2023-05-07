@@ -137,7 +137,7 @@ module Mrbmacs
       if mode_str.length < win.width - 1
         mode_str += '-' * (win.width - mode_str.length)
       else
-        mode_str[win.width - 1] = ' '
+        mode_str = mode_str[0, win.width - 1]
       end
       win.mode_win = mode_str
       win.refresh_modeline
