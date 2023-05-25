@@ -4,8 +4,8 @@ module Mrbmacs
     def initialize(frame, buffer, left, top, width, height)
       super(frame, buffer, left, top, width, height)
       @sci = Scintilla::ScintillaTermbox.new do |scn|
-        code = scn['code']
-#        @frame.sci_notifications.delete_if { |n| n['code'] == code }
+        # code = scn['code']
+        # @frame.sci_notifications.delete_if { |n| n['code'] == code }
         @frame.sci_notifications.push(scn)
       end
 
@@ -29,7 +29,7 @@ module Mrbmacs
       apply_theme_base(theme)
       @sci.sci_set_fold_margin_colour(true, theme.background_color)
       @sci.sci_set_fold_margin_hicolour(true, theme.foreground_color)
-      for n in 25..31
+      (25..31).each do |n|
         @sci.sci_marker_set_fore(n, theme.foreground_color)
         @sci.sci_marker_set_back(n, theme.background_color)
       end
@@ -51,12 +51,17 @@ module Mrbmacs
       fore_color = 0x181818
       back_color = 0xb8b8b8
       if @sci.sci_get_focus == false
-        back_color = 0x585858
         fore_color = 0xb8b8b8
+        back_color = 0x585858
       end
-      (0..(@mode_win.length - 1)).each do |x|
-        Termbox.change_cell(@x1 + x, @y2,
-                            Termbox.utf8_char_to_unicode(@mode_win[x]), fore_color, back_color)
+      x = @x1
+      @mode_win.each_char do |c|
+        Termbox.change_cell(x, @y2, Termbox.utf8_char_to_unicode(c), fore_color, back_color)
+        x += if Termbox.utf8_char_length(c) > 1
+               2
+             else
+               1
+             end
       end
     end
 
