@@ -152,16 +152,17 @@ module Mrbmacs
     end
 
     def strfkey(event)
-      key_str = ''
-      if TERMBOX_KEYMAP.key? event.key
-        key_str = TERMBOX_KEYMAP[event.key]
+      return TERMBOX_KEYMAP[event.key] if TERMBOX_KEYMAP.key?(event.key)
+
+      key_str = if event.mod == Termbox::MOD_ALT
+                  'M-'
+                else
+                  ''
+                end
+      if event.key == 0 && event.ch == 0.chr
+        key_str += 'C- '
       else
-        key_str = 'M-' if event.mod == Termbox::MOD_ALT
-        if event.key == 0 && event.ch == 0.chr
-          key_str += 'C- '
-        else
-          key_str += event.ch
-        end
+        key_str += event.ch
       end
       key_str
     end
