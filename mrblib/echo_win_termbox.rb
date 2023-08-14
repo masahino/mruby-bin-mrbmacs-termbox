@@ -2,7 +2,7 @@ module Mrbmacs
   # Frame class for Termbox
   class Frame
     def new_echowin
-      echo_win = ScintillaTermbox.new
+      echo_win = Scintilla::ScintillaTermbox.new
       echo_win.sci_set_vscrollbar(false)
       echo_win.resize(Termbox.width, 1)
       echo_win.move(0, Termbox.height - 1)
