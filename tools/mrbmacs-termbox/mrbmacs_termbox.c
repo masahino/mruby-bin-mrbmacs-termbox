@@ -16,7 +16,7 @@ main(int argc, char **argv)
   
   setlocale(LC_CTYPE, "");
   if (mrb == NULL) {
-    fputs("Invalid mrb_state, exiting scimre\n", stderr);
+    fputs("Invalid mrb_state, exiting\n", stderr);
     return EXIT_FAILURE;
   }
   arg_array = mrb_ary_new(mrb);
