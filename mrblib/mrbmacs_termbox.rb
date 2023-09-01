@@ -5,12 +5,11 @@ module Mrbmacs
 
     def doscan(prefix = '')
       loop do
-        ev = nil
-        if prefix == ''
-          ev = Termbox.peek_event(1)
-        else
-          ev = Termbox.poll_event
-        end
+        ev = if prefix == ''
+               Termbox.peek_event(1)
+             else
+               Termbox.poll_event
+             end
         return if ev.nil?
 
         if ev.type == Termbox::EVENT_RESIZE
@@ -24,16 +23,16 @@ module Mrbmacs
         key_str = prefix + key_str
         key_str.gsub!(/^Escape /, 'M-')
         command = key_scan(key_str)
-        if command != nil
-          return @frame.view_win.send_message(command, nil, nil) if command.is_a?(Integer)
-          return doscan("#{key_str} ") if command == 'prefix'
-
-          extend(command)
-        else
+        if command.nil?
           @frame.send_key(ev)
           if @current_buffer.name != @frame.edit_win.buffer.name
             @current_buffer = @frame.edit_win.buffer
           end
+        else
+          return @frame.view_win.send_message(command, nil, nil) if command.is_a?(Integer)
+          return doscan("#{key_str} ") if command == 'prefix'
+
+          extend(command)
         end
         prefix = ''
       end
@@ -46,7 +45,7 @@ module Mrbmacs
         # notification event
         while @frame.sci_notifications.length > 0
           e = @frame.sci_notifications.shift
-          @logger.debug "sci notification [#{e['code']}]"
+          # @logger.debug "sci notification [#{e['code']}]"
           call_sci_event(e)
         end
         @frame.view_win.refresh
