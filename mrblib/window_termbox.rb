@@ -13,9 +13,10 @@ module Mrbmacs
       init_sci_default
       init_margin_termbox
       init_buffer(buffer)
-      @mode_win = ''
-      @sci.sci_set_focus(true)
-      @sci.refresh
+      @mode_win = ModeWindowTermbox.new
+      focus_in
+      # @sci.sci_set_focus(true)
+      # @sci.refresh
     end
 
     def init_margin_termbox
@@ -25,6 +26,10 @@ module Mrbmacs
       @sci.sci_set_margin_typen(MARGIN_FOLDING, 0)
     end
 
+    def to_rgb(color)
+      ((color & 0xff) << 16) + (color & 0x00ff00) + ((color & 0xff0000) >> 16)
+    end
+
     def apply_theme(theme)
       apply_theme_base(theme)
       @sci.sci_set_fold_margin_colour(true, theme.background_color)
@@ -32,6 +37,14 @@ module Mrbmacs
       (25..31).each do |n|
         @sci.sci_marker_set_fore(n, theme.foreground_color)
         @sci.sci_marker_set_back(n, theme.background_color)
+      end
+      if theme.font_color[:color_mode_line]
+        @mode_win.fore_color = to_rgb(theme.font_color[:color_mode_line][0])
+        @mode_win.back_color = to_rgb(theme.font_color[:color_mode_line][1])
+      end
+      if theme.font_color[:color_mode_line_inactive]
+        @mode_win.fore_color_inactive = to_rgb(theme.font_color[:color_mode_line_inactive][0])
+        @mode_win.back_color_inactive = to_rgb(theme.font_color[:color_mode_line_inactive][1])
       end
     end
 
@@ -44,20 +57,19 @@ module Mrbmacs
 
     def refresh
       @sci.refresh
-      refresh_modeline
     end
 
     def refresh_modeline
-      fore_color = 0x181818
-      back_color = 0xb8b8b8
+      fore_color = @mode_win.fore_color
+      back_color = @mode_win.back_color
       if @sci.sci_get_focus == false
-        fore_color = 0xb8b8b8
-        back_color = 0x585858
+        fore_color = @mode_win.fore_color_inactive
+        back_color = @mode_win.back_color_inactive
       end
       x = @x1
-      @mode_win.each_char do |c|
-        Termbox.change_cell(x, @y2, Termbox.utf8_char_to_unicode(c), fore_color, back_color)
-        x += if Termbox.utf8_char_length(c) > 1
+      @mode_win.mode_ary.each do |c|
+        Termbox.change_cell(x, @y2, c, fore_color, back_color)
+        x += if c > 0xff
                2
              else
                1

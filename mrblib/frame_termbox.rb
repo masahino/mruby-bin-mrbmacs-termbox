@@ -139,7 +139,7 @@ module Mrbmacs
       else
         mode_str = mode_str[0, win.width - 1]
       end
-      win.mode_win = mode_str
+      win.mode_win.update(mode_str)
       win.refresh_modeline
     end
 
