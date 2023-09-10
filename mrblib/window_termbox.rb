@@ -60,9 +60,10 @@ module Mrbmacs
     end
 
     def refresh_modeline
-      fore_color = @mode_win.fore_color
-      back_color = @mode_win.back_color
-      if @sci.sci_get_focus == false
+      if @sci.sci_get_focus == true
+        fore_color = @mode_win.fore_color
+        back_color = @mode_win.back_color
+      else
         fore_color = @mode_win.fore_color_inactive
         back_color = @mode_win.back_color_inactive
       end
@@ -74,6 +75,7 @@ module Mrbmacs
              else
                1
              end
+        break if x > @x2
       end
     end
 

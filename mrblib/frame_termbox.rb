@@ -132,21 +132,6 @@ module Mrbmacs
       end
     end
 
-    def modeline(app, win = @edit_win)
-      mode_str = get_mode_str(app)
-      if mode_str.length < win.width - 1
-        mode_str += '-' * (win.width - mode_str.length)
-      else
-        mode_str = mode_str[0, win.width - 1]
-      end
-      win.mode_win.update(mode_str)
-      win.refresh_modeline
-    end
-
-    def modeline_refresh(app)
-      modeline(app)
-    end
-
     def waitkey(_win = nil)
       [nil, Termbox.poll_event]
     end
@@ -165,6 +150,23 @@ module Mrbmacs
         key_str += event.ch
       end
       key_str
+    end
+
+    def modeline(app, win = @edit_win)
+      mode_str = get_mode_str(app)
+      if mode_str.length < win.width - 1
+        mode_str += '-' * (win.width - mode_str.length)
+      else
+        mode_str = mode_str[0, win.width - 1]
+      end
+      win.mode_win.update(mode_str)
+      win.refresh_modeline
+    end
+
+    def modeline_refresh(_app)
+      @edit_win_list.each do |w|
+        w.refresh_modeline
+      end
     end
 
     def exit
