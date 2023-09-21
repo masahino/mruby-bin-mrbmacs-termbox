@@ -60,21 +60,14 @@ module Mrbmacs
     end
 
     def refresh_modeline
-      if @sci.sci_get_focus == true
-        fore_color = @mode_win.fore_color
-        back_color = @mode_win.back_color
-      else
-        fore_color = @mode_win.fore_color_inactive
-        back_color = @mode_win.back_color_inactive
-      end
+      is_focus = @sci.sci_get_focus
+      fore_color = is_focus ? @mode_win.fore_color : @mode_win.fore_color_inactive
+      back_color = is_focus ? @mode_win.back_color : @mode_win.back_color_inactive
       x = @x1
-      @mode_win.mode_ary.each do |c|
+      @mode_win.mode_codepoints.each do |c|
         Termbox.change_cell(x, @y2, c, fore_color, back_color)
-        x += if c > 0xff
-               2
-             else
-               1
-             end
+        x += c > 0xff ? 2 : 1
+
         break if x > @x2
       end
     end
