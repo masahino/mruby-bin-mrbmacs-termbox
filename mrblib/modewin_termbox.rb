@@ -10,12 +10,10 @@ module Mrbmacs
       @back_color = 0xb8b8b8
       @fore_color_inactive = 0xb8b8b8
       @back_color_inactive = 0x585858
-      @mode_codepoints = []
     end
 
     def update(str)
       @mode_str = str
-      @mode_codepoints = @mode_str.codepoints
     end
   end
 end
