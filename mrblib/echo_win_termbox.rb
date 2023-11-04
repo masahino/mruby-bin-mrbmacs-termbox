@@ -59,7 +59,7 @@ module Mrbmacs
             @echo_win.sci_autoc_cancel
             refresh_all
             comp_list, len = block.call(input_text)
-            common_str = Mrbmacs.common_str(comp_list.split(@echo_win.sci_autoc_get_separator.chr))
+            common_str = Mrbmacs.common_prefix(comp_list.split(@echo_win.sci_autoc_get_separator.chr))
             unless common_str.nil?
               @echo_win.sci_autoc_cancel
               @echo_win.sci_add_text(common_str[len..].bytesize, common_str[len..])

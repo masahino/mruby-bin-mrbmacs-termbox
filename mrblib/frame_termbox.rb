@@ -1,13 +1,5 @@
 # Mrbmacs
 module Mrbmacs
-  def self.common_str(comp_list)
-    max_len = comp_list.map { |i| i.length }.min
-    (1..max_len).reverse_each do |i|
-      return comp_list[0][0..i] if comp_list.map { |f| f[0..i] }.sort.uniq.size == 1
-    end
-    nil
-  end
-
   # Frame class for termbox
   class Frame
     TERMBOX_KEYMAP = {
@@ -104,7 +96,6 @@ module Mrbmacs
 
       if tmp_win.sci != win && !tmp_win.nil? && win != @echo_win
         switch_window(tmp_win)
-        # tmp_win.buffer.mode.set_style(tmp_win.sci, @theme)
         win = tmp_win.sci
       end
       mouse_event = Scintilla::SCM_PRESS
