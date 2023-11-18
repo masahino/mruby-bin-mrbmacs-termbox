@@ -52,6 +52,36 @@ jobs:
       - name: Test
         run: faketty ./build.sh test
 
+  Windows-msys2:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      CC: gcc
+      installer-path: '%TMP%\cygwin-setup.exe'
+      cygwin-root: C:\cygwin
+      package-dir: C:\cygwin-package
+      cache-version: v1
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            gcc
+            git
+            ruby
+      - name: Ruby version
+        run: ruby -v
+      - name: Compiler version
+        run: ${{ env.CC }} --version
+      - name: Build and test
+        run: ./build.sh
+
   Windows-Cygwin:
     runs-on: windows-latest
     timeout-minutes: 20
