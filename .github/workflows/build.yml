@@ -74,6 +74,7 @@ jobs:
           install: >-
             gcc
             git
+            libiconv-devel
             make
             ruby
       - name: Ruby version
