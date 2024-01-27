@@ -76,6 +76,7 @@ module Mrbmacs
       Termbox.init
       Termbox.select_output_mode(Termbox::OUTPUT_TRUECOLOR)
       Termbox.select_input_mode(Termbox::INPUT_ESC | Termbox::INPUT_MOUSE)
+      Termbox.set_cursor(Termbox::HIDE_CURSOR, Termbox::HIDE_CURSOR)
       @width = Termbox.width
       @height = Termbox.height
       @sci_notifications = []
