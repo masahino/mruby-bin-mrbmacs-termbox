@@ -29,7 +29,6 @@ module Mrbmacs
       Termbox::KEY_CTRL_X => 'C-x',
       Termbox::KEY_CTRL_Y => 'C-y',
       Termbox::KEY_CTRL_Z => 'C-z',
-      Termbox::KEY_CTRL_F => 'C-f',
       Termbox::KEY_SPACE => ' ',
       Termbox::KEY_TAB => 'Tab',
       Termbox::KEY_ENTER => 'Enter',
@@ -95,16 +94,20 @@ module Mrbmacs
       tmp_win = get_edit_win_from_pos(event.y, event.x)
       return if tmp_win.nil?
 
-      if tmp_win.sci != win && !tmp_win.nil? && win != @echo_win
+      if tmp_win.sci != win && win != @echo_win
         switch_window(tmp_win)
         win = tmp_win.sci
       end
-      mouse_event = Scintilla::SCM_PRESS
-      mouse_event = Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
-      c = 0
-      c = TERMBOX_KEYSYMS[event.key] if TERMBOX_KEYSYMS.key? event.key
-      mouse_event = Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
+      mouse_event = determine_mouse_event(event)
+      c = TERMBOX_KEYSYMS.fetch(event.key, 0)
       win.send_mouse(mouse_event, c, event.y, event.x, false, false, false)
+    end
+
+    def determine_mouse_event(event)
+      return Scintilla::SCM_DRAG if event.mod == Termbox::MOD_MOTION
+      return Scintilla::SCM_RELEASE if event.key == Termbox::KEY_MOUSE_RELEASE
+
+      Scintilla::SCM_PRESS
     end
 
     def send_key(event, win = nil)
@@ -136,7 +139,7 @@ module Mrbmacs
                 else
                   ''
                 end
-      if event.key == 0 && event.ch == 0.chr
+      if event.key.zero? && event.ch == 0.chr
         key_str += 'C- '
       else
         key_str += event.ch
@@ -156,9 +159,7 @@ module Mrbmacs
     end
 
     def modeline_refresh(_app)
-      @edit_win_list.each do |w|
-        w.refresh_modeline
-      end
+      @edit_win_list.map(&:refresh_modeline)
     end
 
     def exit
@@ -167,11 +168,10 @@ module Mrbmacs
 
     def select_buffer(default_buffername, buffer_list)
       echo_text = "Switch to buffer: (default #{default_buffername}) "
-      buffername = echo_gets(echo_text, '') do |input_text|
+      echo_gets(echo_text, '') do |input_text|
         list = buffer_list.select { |b| b[0, input_text.length] == input_text }
         [list.join(@echo_win.sci_autoc_get_separator.chr), input_text.length]
       end
-      buffername
     end
 
     def delete_other_window
@@ -228,12 +228,8 @@ module Mrbmacs
 
     def delete_too_small_window(new_width, new_height)
       @edit_win_list.each do |win|
-        if new_width - 1 < win.x1
-          delete_window(win)
-        end
-        if new_height - 1 - 1 < win.y1
-          delete_window(win)
-        end
+        delete_window(win) if new_width - 1 < win.x1
+        delete_window(win) if new_height - 1 - 1 < win.y1
       end
     end
 
@@ -244,9 +240,7 @@ module Mrbmacs
         @edit_win.compute_area
         @edit_win.refresh
       else
-        if new_width < @width || new_height < @height
-          delete_too_small_window(new_width, new_height)
-        end
+        delete_too_small_window(new_width, new_height) if new_width < @width || new_height < @height
         if new_width > @width
           extend_width(new_width)
         elsif new_width < @width
