@@ -1,5 +1,6 @@
 # mruby-bin-mrbmacs-termbox
-Scintilla base text editor written in mruby
+
+mrbmacs-termbox is a lightweight text editor with an Emacs-like interface. It adopts the Scintilla framework for efficient code editing and enhanced syntax highlighting, augmented by the customizability of mruby scripting extensions.
 
 ![mrbmacs-termbox](https://user-images.githubusercontent.com/381912/141677899-5cb7041d-0b92-44ab-a727-fddee4565c70.png "mrbmacs-termbox")
 
