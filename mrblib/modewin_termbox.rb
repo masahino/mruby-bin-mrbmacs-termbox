@@ -1,7 +1,7 @@
 module Mrbmacs
   # Modeline
   class ModeWindowTermbox
-    attr_accessor :mode_str, :mode_codepoints, :fore_color,
+    attr_accessor :mode_str, :fore_color,
                   :back_color, :fore_color_inactive, :back_color_inactive
 
     def initialize
