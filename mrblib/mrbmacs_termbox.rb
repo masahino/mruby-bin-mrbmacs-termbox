@@ -21,17 +21,16 @@ module Mrbmacs
         key_str = @frame.strfkey(ev)
         add_recent_key(key_str)
         key_str = prefix + key_str
-        key_str.gsub!(/^Escape /, 'M-')
+        key_str.sub!(/^Escape /, 'M-')
         command = key_scan(key_str)
         if command.nil?
           @frame.send_key(ev)
-          if @current_buffer.name != @frame.edit_win.buffer.name
-            @current_buffer = @frame.edit_win.buffer
-          end
+          @current_buffer = @frame.edit_win.buffer if @current_buffer.name != @frame.edit_win.buffer.name
+        elsif command.is_a?(Integer)
+          @frame.view_win.send_message(command, nil, nil)
+        elsif command == 'prefix'
+          doscan("#{key_str} ")
         else
-          return @frame.view_win.send_message(command, nil, nil) if command.is_a?(Integer)
-          return doscan("#{key_str} ") if command == 'prefix'
-
           extend(command)
         end
         prefix = ''
