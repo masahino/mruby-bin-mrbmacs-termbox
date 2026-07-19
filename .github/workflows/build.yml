@@ -4,8 +4,13 @@ on: [push, pull_request]
 
 jobs:
   Ubuntu:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     env:
       MRUBY_CONFIG: ci/gcc-clang
       TERM: xterm
@@ -21,7 +26,7 @@ jobs:
       - name: upload
         uses: actions/upload-artifact@v7
         with:
-          name: mrbmacs-termbox
+          name: mrbmacs-termbox-${{ matrix.os }}
           path: mruby/bin/mrbmacs-termbox
       - name: Setup faketty
         uses: Yuri6037/Action-FakeTTY@v1.1
@@ -29,8 +34,13 @@ jobs:
         run: faketty ./build.sh test
 
   macOS:
-    runs-on: macos-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-26]
     env:
       MRUBY_CONFIG: ci/gcc-clang
       CC: clang
@@ -45,23 +55,23 @@ jobs:
       - name: upload
         uses: actions/upload-artifact@v7
         with:
-          name: mrbmacs-termbox
+          name: mrbmacs-termbox-${{ matrix.os }}
           path: mruby/bin/mrbmacs-termbox
       - name: Setup faketty
         uses: Yuri6037/Action-FakeTTY@v1.1
       - name: Test
         run: faketty ./build.sh test
 
-  Windows-msys2:
-    runs-on: windows-latest
+  Windows-MinGW64:
+    name: ${{ matrix.os }}-mingw64
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
     env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       CC: gcc
-      installer-path: '%TMP%\cygwin-setup.exe'
-      cygwin-root: C:\cygwin
-      package-dir: C:\cygwin-package
-      cache-version: v1
     defaults:
       run:
         shell: msys2 {0}
@@ -70,13 +80,15 @@ jobs:
       - name: setup msys2
         uses: msys2/setup-msys2@v2
         with:
+          msystem: MINGW64
           update: true
           install: >-
-            gcc
             git
-            libiconv-devel
             make
             ruby
+          pacboy: >-
+            gcc:p
+            libiconv:p
       - name: Ruby version
         run: ruby -v
       - name: Compiler version
