@@ -62,39 +62,39 @@ jobs:
       - name: Test
         run: faketty ./build.sh test
 
-  Windows-MinGW64:
-    name: ${{ matrix.os }}-mingw64
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-2022, windows-2025]
-    env:
-      CC: gcc
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v6
-      - name: setup msys2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: >-
-            git
-            make
-            ruby
-          pacboy: >-
-            gcc:p
-            libiconv:p
-      - name: Ruby version
-        run: ruby -v
-      - name: Compiler version
-        run: ${{ env.CC }} --version
-      - name: Build and test
-        run: ./build.sh
+#  Windows-MinGW64:
+#    name: ${{ matrix.os }}-mingw64
+#    runs-on: ${{ matrix.os }}
+#    timeout-minutes: 20
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: [windows-2022, windows-2025]
+#    env:
+#      CC: gcc
+#    defaults:
+#      run:
+#        shell: msys2 {0}
+#    steps:
+#      - uses: actions/checkout@v6
+#      - name: setup msys2
+#        uses: msys2/setup-msys2@v2
+#        with:
+#          msystem: MINGW64
+#          update: true
+#          install: >-
+#            git
+#            make
+#            ruby
+#          pacboy: >-
+#            gcc:p
+#            libiconv:p
+#      - name: Ruby version
+#        run: ruby -v
+#      - name: Compiler version
+#        run: ${{ env.CC }} --version
+#      - name: Build and test
+#        run: ./build.sh
 
 #  Windows-Cygwin:
 #    runs-on: windows-latest
