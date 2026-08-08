@@ -16,7 +16,7 @@ jobs:
       TERM: xterm
       CC: gcc
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Ruby version
         run: ruby -v
       - name: Compiler version
@@ -45,7 +45,7 @@ jobs:
       MRUBY_CONFIG: ci/gcc-clang
       CC: clang
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Ruby version
         run: ruby -v
       - name: Compiler version
@@ -76,7 +76,7 @@ jobs:
 #      run:
 #        shell: msys2 {0}
 #    steps:
-#      - uses: actions/checkout@v6
+#      - uses: actions/checkout@v7
 #      - name: setup msys2
 #        uses: msys2/setup-msys2@v2
 #        with:
@@ -107,7 +107,7 @@ jobs:
 #      package-dir: C:\cygwin-package
 #      cache-version: v1
 #    steps:
-#      - uses: actions/checkout@v6
+#      - uses: actions/checkout@v7
 #      - uses: actions/cache@v3
 #        with:
 #          path: ${{ env.package-dir }}
