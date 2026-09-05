@@ -21,7 +21,8 @@ module Mrbmacs
         key_str = @frame.strfkey(ev)
         add_recent_key(key_str)
         key_str = prefix + key_str
-        key_str.sub!(/^Escape /, 'M-')
+        # key_str.sub!(/^Escape /, 'M-')
+        key_str = 'M-' + key_str[7..].to_s if key_str.start_with?('Escape ')
         command = key_scan(key_str)
         if command.nil?
           @frame.send_key(ev)

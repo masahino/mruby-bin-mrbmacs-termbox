@@ -40,9 +40,10 @@ MRuby::Build.new do |conf|
   end
 
   # additional themes
-  # conf.gem github: 'masahino/mruby-mrbmacs-themes-base16'
-  # conf.gem github: 'masahino/mruby-mrbmacs-themes-tomorrow', branch: 'main'
+  conf.gem github: 'masahino/mruby-mrbmacs-themes-base16'
+  conf.gem github: 'masahino/mruby-mrbmacs-themes-tomorrow'
 
+  conf.gem github: 'masahino/mruby-mrbmacs-dap'
   conf.gem "#{MRUBY_ROOT}/.." do |g|
 #   g.linker.libraries << 'stdc++'
   end
