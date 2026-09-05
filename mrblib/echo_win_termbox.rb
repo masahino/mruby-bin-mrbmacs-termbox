@@ -90,19 +90,7 @@ module Mrbmacs
     end
 
     def y_or_n(prompt)
-      @echo_win.sci_clear_all
-      echo_set_prompt(prompt)
-      _ret, ev = waitkey
-      key_str = strfkey(ev)
-      echo_set_prompt('')
-      case key_str
-      when 'Y', 'y'
-        true
-      when 'C-g'
-        false
-      else
-        false
-      end
+      y_or_n_terminal(prompt)
     end
   end
 end

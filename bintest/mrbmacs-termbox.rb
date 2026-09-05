@@ -2,6 +2,20 @@ require 'open3'
 require 'fileutils'
 require 'timeout'
 
+assert('report the generated frontend version') do
+  version_file = File.join(
+    ENV.fetch('BUILD_DIR'), 'mrbgems', GEMNAME, 'version.txt'
+  )
+  expected_version = File.read(version_file).strip
+  stdout, stderr, status = Open3.capture3(
+    "#{cmd('mrbmacs-termbox')} --version"
+  )
+
+  assert_equal 0, status.to_i
+  assert_equal '', stderr
+  assert_equal expected_version, stdout.strip
+end
+
 assert('init buffer') do
   skip if ENV['GITHUB_ACTIONS']
   skip '/dev/tty is not found' unless File.exist?('/dev/tty')
