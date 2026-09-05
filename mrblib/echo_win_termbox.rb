@@ -82,12 +82,6 @@ module Mrbmacs
       input_text
     end
 
-    def echo_set_prompt(prompt)
-      @echo_win.sci_set_margin_widthn(3, @echo_win.sci_text_width(Scintilla::STYLE_DEFAULT, prompt))
-      @echo_win.sci_margin_set_text(0, prompt)
-      @echo_win.refresh
-    end
-
     def echo_puts(text)
       @echo_win.sci_clear_all
       echo_set_prompt('[Message]')
