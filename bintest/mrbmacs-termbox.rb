@@ -15,7 +15,7 @@ def termbox_run(args, timeout: 20)
   output = +''
   status = nil
   PTY.spawn("#{cmd('mrbmacs-termbox')} #{args}") do |r, w, pid|
-    w.winsize = [40, 120]
+    w.winsize = [40, 120] rescue nil
     begin
       Timeout.timeout(timeout) { loop { output << r.readpartial(4096) } }
     rescue Errno::EIO, EOFError
@@ -25,7 +25,16 @@ def termbox_run(args, timeout: 20)
     end
     _pid, status = Process.wait2(pid) rescue [nil, nil]
   end
-  [output, status && status.exitstatus]
+  [output, status]
+end
+
+# Assert the run exited cleanly; on failure show the signal/status and the
+# tail of the merged PTY output so CI logs are actionable.
+def assert_run_ok(status, output)
+  ok = status.is_a?(Process::Status) && status.exitstatus == 0
+  assert_true ok,
+              "mrbmacs-termbox did not exit cleanly: #{status.inspect}\n" \
+              "--- last output ---\n#{output.to_s[-1000..] || output}"
 end
 
 # Run a -l script that reports lines through ENV['MRBMACS_BINTEST_OUT'].
@@ -34,8 +43,8 @@ end
 def termbox_capture(script)
   File.delete($capture_file) if File.exist?($capture_file)
   ENV['MRBMACS_BINTEST_OUT'] = $capture_file
-  _output, exitstatus = termbox_run("-q -l #{$script_dir}#{script}")
-  assert_equal 0, exitstatus
+  output, status = termbox_run("-q -l #{$script_dir}#{script}")
+  assert_run_ok(status, output)
   File.exist?($capture_file) ? File.read($capture_file).split("\n") : []
 end
 
@@ -73,8 +82,8 @@ def run_edit_test(test_name, input_file = 'test.input')
   edit_file = "#{File.dirname(__FILE__)}/#{test_name}.input"
   output_file = "#{$script_dir}#{test_name}.output"
   FileUtils.cp "#{File.dirname(__FILE__)}/#{input_file}", edit_file
-  _output, exitstatus = termbox_run("-q -l #{$script_dir}#{test_name} #{edit_file}")
-  assert_equal 0, exitstatus
+  output, status = termbox_run("-q -l #{$script_dir}#{test_name} #{edit_file}")
+  assert_run_ok(status, output)
   assert_equal File.read(output_file), File.read(edit_file)
   File.delete edit_file
 end

@@ -39,6 +39,7 @@ jobs:
       matrix:
         os: [macos-15, macos-26]
     env:
+      TERM: xterm
       CC: clang
     steps:
       - uses: actions/checkout@v6
