@@ -92,5 +92,9 @@ module Mrbmacs
     def y_or_n(prompt)
       y_or_n_terminal(prompt)
     end
+
+    def read_choice(prompt, choices)
+      read_choice_terminal(prompt, choices)
+    end
   end
 end
