@@ -10,4 +10,5 @@ uncomment_line
 @frame.view_win.sci_linedown
 comment_line
 save_buffer
-save_buffers_kill_terminal
+@frame.exit
+exit
