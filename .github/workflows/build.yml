@@ -27,10 +27,8 @@ jobs:
         with:
           name: mrbmacs-termbox-${{ matrix.os }}
           path: mruby/bin/mrbmacs-termbox
-      - name: Setup faketty
-        uses: Yuri6037/Action-FakeTTY@v1.1
       - name: Test
-        run: faketty rake test
+        run: rake test
 
   macOS:
     name: ${{ matrix.os }}
@@ -55,7 +53,5 @@ jobs:
         with:
           name: mrbmacs-termbox-${{ matrix.os }}
           path: mruby/bin/mrbmacs-termbox
-      - name: Setup faketty
-        uses: Yuri6037/Action-FakeTTY@v1.1
       - name: Test
-        run: faketty rake test
+        run: rake test

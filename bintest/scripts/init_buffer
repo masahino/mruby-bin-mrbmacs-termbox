@@ -1,4 +1,6 @@
-$stderr.puts @current_buffer.name
-$stderr.puts @frame.view_win.sci_get_text(10)
+File.open(ENV['MRBMACS_BINTEST_OUT'] || '/dev/stderr', 'w') do |f|
+  f.puts @current_buffer.name
+  f.puts @frame.view_win.sci_get_text(10)
+end
 @frame.exit
 exit

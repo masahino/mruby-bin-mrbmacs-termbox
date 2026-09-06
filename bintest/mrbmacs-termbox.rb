@@ -1,6 +1,43 @@
 require 'open3'
 require 'fileutils'
 require 'timeout'
+require 'pty'
+require 'io/console'
+
+$script_dir = "#{File.dirname(__FILE__)}/scripts/"
+$capture_file = "#{File.dirname(__FILE__)}/.capture"
+
+# mrbmacs-termbox opens /dev/tty and reads the terminal size during startup
+# (tb_init), so it needs a real, sized terminal. A plain pipe (Open3) makes
+# tb_init fail; an unsized CI PTY makes it come up 0x0. Run it under a PTY with
+# an explicit winsize instead.
+def termbox_run(args, timeout: 20)
+  output = +''
+  status = nil
+  PTY.spawn("#{cmd('mrbmacs-termbox')} #{args}") do |r, w, pid|
+    w.winsize = [40, 120]
+    begin
+      Timeout.timeout(timeout) { loop { output << r.readpartial(4096) } }
+    rescue Errno::EIO, EOFError
+      # child exited and closed the pty - expected
+    rescue Timeout::Error
+      Process.kill('KILL', pid) rescue nil
+    end
+    _pid, status = Process.wait2(pid) rescue [nil, nil]
+  end
+  [output, status && status.exitstatus]
+end
+
+# Run a -l script that reports lines through ENV['MRBMACS_BINTEST_OUT'].
+# The PTY merges stdout/stderr with termbox's escape output, so scripts write
+# their assertions to a file instead.
+def termbox_capture(script)
+  File.delete($capture_file) if File.exist?($capture_file)
+  ENV['MRBMACS_BINTEST_OUT'] = $capture_file
+  _output, exitstatus = termbox_run("-q -l #{$script_dir}#{script}")
+  assert_equal 0, exitstatus
+  File.exist?($capture_file) ? File.read($capture_file).split("\n") : []
+end
 
 assert('report the generated frontend version') do
   version_file = File.join(
@@ -17,50 +54,28 @@ assert('report the generated frontend version') do
 end
 
 assert('init buffer') do
-  skip if ENV['GITHUB_ACTIONS']
-  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
-  _stdout, stderr, status =
-    Open3.capture3("#{cmd('mrbmacs-termbox')} -l #{File.dirname(__FILE__)}/scripts/init_buffer")
-  assert_equal 0, status.to_i
-  lines = stderr.split("\n")
+  lines = termbox_capture('init_buffer')
   assert_equal '*scratch*', lines[0]
 end
 
 assert('split window') do
-  skip if ENV['GITHUB_ACTIONS']
-  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
-  _stdout, stderr, status =
-    Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window")
-  assert_equal 0, status.to_i
-  assert_equal 0, stderr.length
+  lines = termbox_capture('split_window')
+  assert_equal [], lines
 end
 
-assert('split window') do
-  skip if ENV['GITHUB_ACTIONS']
-  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
-  _stdout, stderr, status =
-    Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/split_window2")
-  assert_equal 0, status.to_i
-  lines = stderr.split("\n")
+assert('split window 2') do
+  lines = termbox_capture('split_window2')
   assert_equal '*scratch*', lines[0]
   assert_equal '*scratch*', lines[1]
 end
 
 def run_edit_test(test_name, input_file = 'test.input')
-  skip if ENV['GITHUB_ACTIONS']
-  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
-
-  edit_file = File.dirname(__FILE__) + "/#{test_name}.input"
-  output_file = "#{File.dirname(__FILE__)}/scripts/#{test_name}.output"
+  edit_file = "#{File.dirname(__FILE__)}/#{test_name}.input"
+  output_file = "#{$script_dir}#{test_name}.output"
   FileUtils.cp "#{File.dirname(__FILE__)}/#{input_file}", edit_file
-  Timeout.timeout(10) do
-    _stdout, _stderr, _status =
-      Open3.capture3("#{cmd('mrbmacs-termbox')} -q -l #{File.dirname(__FILE__)}/scripts/#{test_name} #{edit_file}")
-  end
-  expected_text = File.open(output_file, 'r').read
-  actual_text = File.open(edit_file, 'r').read
-  #  assert_true FileUtils.cmp(edit_file, output_file)
-  assert_equal expected_text, actual_text
+  _output, exitstatus = termbox_run("-q -l #{$script_dir}#{test_name} #{edit_file}")
+  assert_equal 0, exitstatus
+  assert_equal File.read(output_file), File.read(edit_file)
   File.delete edit_file
 end
 
@@ -130,11 +145,4 @@ end
 
 assert('comment-line') do
   run_edit_test('comment-line', 'test2.input')
-end
-
-##########
-assert('isearch-backward') do
-end
-
-assert('isearch-forward') do
 end
