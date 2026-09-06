@@ -9,10 +9,11 @@ class Keytest
 end
 
 assert('strfkey') do
-  skip '/dev/tty is not found' unless File.exist?('/dev/tty')
-  frame = Mrbmacs::Frame.new(Mrbmacs::Buffer.new)
+  # strfkey only reads the event and the TERMBOX_KEYMAP constant, so test it on
+  # a bare instance. Mrbmacs::Frame.new would call Termbox.init (opens /dev/tty),
+  # which is neither needed here nor available on a headless CI runner.
+  frame = Mrbmacs::Frame.allocate
   assert_equal 'C-a', frame.strfkey(Keytest.new(Termbox::EVENT_KEY, 0, Termbox::KEY_CTRL_A, 0))
   assert_equal 'a', frame.strfkey(Keytest.new(Termbox::EVENT_KEY, 0, 0, 'a'))
   assert_equal 'M-a', frame.strfkey(Keytest.new(Termbox::EVENT_KEY, Termbox::MOD_ALT, 0, 'a'))
-  frame.exit
 end
