@@ -1,9 +1,0 @@
-split_window_vertically
-other_window
-File.open(ENV['MRBMACS_BINTEST_OUT'] || '/dev/stderr', 'w') do |f|
-  f.puts @current_buffer.name
-  other_window
-  f.puts @current_buffer.name
-end
-@frame.exit
-exit

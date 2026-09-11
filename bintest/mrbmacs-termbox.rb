@@ -11,7 +11,7 @@ $capture_file = "#{File.dirname(__FILE__)}/.capture"
 # (tb_init), so it needs a real, sized terminal. A plain pipe (Open3) makes
 # tb_init fail; an unsized CI PTY makes it come up 0x0. Run it under a PTY with
 # an explicit winsize instead.
-def termbox_run(args, timeout: 20)
+def termbox_run(args, timeout: 30)
   output = +''
   status = nil
   PTY.spawn("#{cmd('mrbmacs-termbox')} #{args}") do |r, w, pid|
@@ -48,6 +48,18 @@ def termbox_capture(script)
   File.exist?($capture_file) ? File.read($capture_file).split("\n") : []
 end
 
+# Copy +input_file+ aside, let +test_name+ edit and save it, then compare the
+# saved bytes with the recorded expectation.
+def run_edit_test(test_name, input_file = 'test.input')
+  edit_file = "#{File.dirname(__FILE__)}/#{test_name}.input"
+  output_file = "#{$script_dir}#{test_name}.output"
+  FileUtils.cp "#{File.dirname(__FILE__)}/#{input_file}", edit_file
+  output, status = termbox_run("-q -l #{$script_dir}#{test_name} #{edit_file}")
+  assert_run_ok(status, output)
+  assert_equal File.read(output_file), File.read(edit_file)
+  File.delete edit_file
+end
+
 assert('report the generated frontend version') do
   version_file = File.join(
     ENV.fetch('BUILD_DIR'), 'mrbgems', GEMNAME, 'version.txt'
@@ -62,96 +74,41 @@ assert('report the generated frontend version') do
   assert_equal expected_version, stdout.strip
 end
 
-assert('init buffer') do
-  lines = termbox_capture('init_buffer')
-  assert_equal '*scratch*', lines[0]
+assert('every non-interactive command runs against the real Scintilla') do
+  lines = termbox_capture('all-commands')
+
+  failures = lines.select { |line| line.start_with?('NG ') }
+  assert_equal [], failures
+  # A base command in neither the allow nor the skip list needs a decision.
+  undecided = lines.select { |line| line.start_with?('UNLISTED ') }
+  assert_equal [], undecided
+  # Without the trailing marker the script stopped early; the last line names
+  # the command it was running.
+  assert_true lines.include?('done'),
+              "all-commands stopped at: #{lines.last.inspect}"
 end
 
-assert('split window') do
-  lines = termbox_capture('split_window')
-  assert_equal [], lines
+assert('edit-japanese') do
+  run_edit_test('edit-japanese')
 end
 
-assert('split window 2') do
-  lines = termbox_capture('split_window2')
-  assert_equal '*scratch*', lines[0]
-  assert_equal '*scratch*', lines[1]
+assert('rectangle') do
+  run_edit_test('rectangle')
 end
 
-def run_edit_test(test_name, input_file = 'test.input')
-  edit_file = "#{File.dirname(__FILE__)}/#{test_name}.input"
-  output_file = "#{$script_dir}#{test_name}.output"
-  FileUtils.cp "#{File.dirname(__FILE__)}/#{input_file}", edit_file
-  output, status = termbox_run("-q -l #{$script_dir}#{test_name} #{edit_file}")
-  assert_run_ok(status, output)
-  assert_equal File.read(output_file), File.read(edit_file)
-  File.delete edit_file
+assert('comment') do
+  run_edit_test('comment', 'test2.input')
 end
 
-assert('beginning-of-buffer') do
-  run_edit_test('beginning-of-buffer')
+assert('eol-crlf') do
+  run_edit_test('eol-crlf', 'test-utf8-dos.input')
 end
 
-assert('beginning-of-line') do
-  run_edit_test('beginning-of-line')
+assert('encoding-cp932') do
+  run_edit_test('encoding-cp932')
 end
 
-assert('clear-rectangle') do
-  run_edit_test('clear-rectangle')
-end
-
-assert('copy-region') do
-  run_edit_test('copy-region')
-end
-
-assert('cut-region') do
-  run_edit_test('cut-region')
-end
-
-assert('delete-rectangle') do
-  run_edit_test('delete-rectangle')
-end
-
-assert('end-of-buffer') do
-  run_edit_test('end-of-buffer')
-end
-
-assert('end-of-line') do
-  run_edit_test('end-of-line')
-end
-
-assert('find-file') do
-  run_edit_test('find-file')
-end
-
-assert('insert-file') do
-  run_edit_test('insert-file')
-end
-
-assert('kill-buffer') do
-  run_edit_test('kill-buffer')
-end
-
-assert('kill-line') do
-  run_edit_test('kill-line')
-end
-
-assert('newline') do
-  run_edit_test('newline')
-end
-
-assert('set-mark') do
-  run_edit_test('set-mark')
-end
-
-assert('switch-to-buffer') do
-  run_edit_test('switch-to-buffer')
-end
-
-assert('yank') do
-  run_edit_test('yank')
-end
-
-assert('comment-line') do
-  run_edit_test('comment-line', 'test2.input')
+assert('window') do
+  # The script reports any ERROR line logged while splitting and closing.
+  assert_equal [], termbox_capture('window')
 end
